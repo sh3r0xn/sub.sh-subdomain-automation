@@ -1,0 +1,19 @@
+#!/bin/bash
+
+assetfinder --subs-only $1 > assetfinder_subdomains
+echo Assetfinder has found $(cat assetfinder_subdomains | wc -l) subdomains for you ............
+chaos -d $1 -o chaos_subdomains > /dev/null
+echo Chaos has found $(cat chaos_subdomains | wc -l) subdomains for you ...............
+subfinder -all -d $1 -o subfinder_subdomains > /dev/null
+echo Subfinder has found $(cat subfinder_subdomains | wc -l) subdomains for you .............
+sleep 5
+amass enum -d $1 -nolocaldb -config /home/sharwan/Desktop/config.ini -o amass_subdomains > /dev/null
+echo Amass has found $(cat amass_subdomains | wc -l) subdomains for you ............ 
+
+sort * | uniq > all_subdomains
+echo total subdomains are $(cat all_subdomains | wc -l) ................
+
+cat all_subdomains | httprobe | tee httprobe_subdomains
+cat httprobe_subdomains | sed 's/:/ /g' | cut -d '/' -f 3-100 | uniq | tee alive_subdomains 
+echo The alive subdomains has a count of $(cat alive_subdomains | wc -l)..............  
+
